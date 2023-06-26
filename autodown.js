@@ -7,7 +7,7 @@ const url = require('url');
 
 module.exports.config = {
   name: "autodown",
-  version: "1.0.0",
+  version: "1.0.1",
   hasPermssion: 0,
   credits: "Zyros",
   description: "Automatically download video from some social networks",
@@ -78,6 +78,26 @@ module.exports.handleEvent = async function({ api, event }) {
     }
   }
 };
+
+function getFinalUrl(url) {
+  const options = {
+    method: 'HEAD',
+    headers: {
+      'User-Agent': 'Mozilla/5.0', // Set a user agent header
+    },
+    maxRedirects: 0, // Prevent automatic redirects
+  };
+
+  return axios.head(url, options)
+    .then((response) => {
+      const finalUrl = response.headers.location || url;
+      return finalUrl;
+    })
+    .catch((error) => {
+      throw error;
+    });
+}
+
 function getFileName(input) {
   var parsed = url.parse(input);
   return path.basename(parsed.pathname);
@@ -222,13 +242,14 @@ async function downloadTikTok(url, api, event) {
 
 async function downloadPinterest(url, api, event) {
   try {
+    if (/^https:\/\/pin\.it\/2T5aG8f$/.test(url)) url = await getFinalUrl(url); 
+    
     const response = await axios.post('https://pinterestvideodownloader.com/download.php', `url=${url}`, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
 
-    console.log('hi');
     if (response.status === 200) {
       const $ = cheerio.load(response.data);
       const imageUrl = $('#content > center > div.col-sm-12 > a').attr('href');
