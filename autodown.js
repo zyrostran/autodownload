@@ -7,7 +7,7 @@ const url = require('url');
 
 module.exports.config = {
   name: "autodown",
-  version: "1.0.1",
+  version: "2.0.0",
   hasPermssion: 0,
   credits: "Zyros",
   description: "Automatically download video from some social networks",
